@@ -446,6 +446,51 @@ class Applicant(models.Model):
         string='Job Source', store=True)
     for_pooling = fields.Boolean('For Pooling', store=True)
 
+    # Initial Touch Logs Fields
+    initial_touch_date = fields.Date('Initial Touch Date', store=True)
+    initial_touch_ageing = fields.Integer('Initial Touch to Movement Ageing', compute='_compute_initial_touch_ageing')
+    initial_touch_ageing_ref = fields.Integer('Initial Touch to Movement Ageing Reference', store=True)
+    
+    @api.onchange('stage_id')
+    def _onchange_initial_touch_date(self):
+        for record in self:
+            if record.stage_id:
+                if record._origin.stage_id.name == "Untapped":
+                    record.initial_touch_date = date.today()
+            else:
+                record.initial_touch_date = False
+
+    @api.depends('initial_touch_date', 'x_touch_date')
+    def _compute_initial_touch_ageing(self):
+        for rec in self:
+            if rec.initial_touch_date and rec.x_touch_date:
+                # Ensure only date parts are compared (remove time components)
+                initial_date = rec.initial_touch_date
+                touch_date = rec.x_touch_date
+
+                # Calculate the age in days excluding the same day
+                if touch_date > initial_date:
+                    age_timedelta = touch_date - initial_date
+
+                    # Calculate the number of working days (excluding weekends)
+                    total_days = age_timedelta.days
+                    working_days = 0
+                    current_date = initial_date + timedelta(days=1)  # Start from the next day
+
+                    while current_date <= touch_date:
+                        if current_date.weekday() < 5:  # Monday to Friday (0 to 4)
+                            working_days += 1
+                        current_date += timedelta(days=1)
+
+                    rec.initial_touch_ageing = working_days
+                    rec.initial_touch_ageing_ref = rec.initial_touch_ageing
+                else:
+                    rec.initial_touch_ageing = 0  # Set to 0 if it's the same day
+                    rec.initial_touch_ageing_ref = rec.initial_touch_ageing
+            else:
+                rec.initial_touch_ageing = False
+                rec.initial_touch_ageing_ref = rec.initial_touch_ageing
+    
     def for_pooling_applicants(self):
         for rec in self:
             rec.for_pooling = True
@@ -681,6 +726,10 @@ class Applicant(models.Model):
     @api.onchange('x_requisition_id')
     def onchange_reprofiled_identifier(self):
         for rec in self:
+            rec.initial_touch_date = False
+            rec.x_application_category = False
+            rec.x_application_stage_ownership = False
+            rec.stage_id = False
             if not self._origin.x_reprofile_logs == False:
                 rec.reprofiled_identifier = True
 

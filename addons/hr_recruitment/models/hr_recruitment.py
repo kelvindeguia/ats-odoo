@@ -364,7 +364,7 @@ class Applicant(models.Model):
     x_app_source_category = fields.Selection(
         [('online-digital', 'Online-Digital'), ('proactive_search', 'Pro-active Search'),
          ('recruitment-marketing', 'Recruitment-Marketing'), ('employee referral', 'Employee Referral'),
-         ('rehire', 'Rehire'), ('open house', 'Open House')],
+         ('rehire', 'Rehire'), ('open house', 'Open House'), ('external_referral', 'External Referral')],
         'Channel', store=True, tracking=True)
     x_app_specific_source_last = fields.Many2one('hr.specificsource', required=False, string='Specific Source',
                                                  domain="[('x_app_source_category','=','proactive_search')]",
@@ -1240,10 +1240,12 @@ class Applicant(models.Model):
                 specific_source = self.env['hr.specificsource'].search(
                     [('x_app_specific_source_new', '=', 'Rehire')], limit=1)
                 rec.x_app_specific_source_last = specific_source.id if specific_source else False
+            if rec.x_app_source_category == 'external_referral':
+                specific_source = self.env['hr.specificsource'].search(
+                    [('x_app_specific_source_new', '=', 'External Referral')], limit=1)
+                rec.x_app_specific_source_last = specific_source.id if specific_source else False
             if not rec.x_app_source_category == 'employee referral':
                 rec.x_referrer_name = ''
-
-
 
     @api.onchange('x_app_specific_source3')
     def onchange_x_compute_specific_source2(self):
@@ -1833,7 +1835,7 @@ class SpecificSource(models.Model):
     x_app_source_category = fields.Selection(
         [('online-digital', 'Online-Digital'), ('proactive_search', 'Pro-active Search'),
          ('recruitment-marketing', 'Recruitment-Marketing'), ('employee referral', 'Employee Referral'),
-         ('rehire', 'Rehire'), ('open house', 'Open House')],
+         ('rehire', 'Rehire'), ('open house', 'Open House'), ('external_referral', 'External Referral')],
         'Channel', store=True)
 
 class ApplicantCategory(models.Model):

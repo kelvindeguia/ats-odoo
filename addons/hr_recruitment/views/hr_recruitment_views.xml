@@ -247,7 +247,7 @@
                                 <field name="x_app_source_category" required="1" />
                                 <field name="x_app_specific_source_last" required="1"
                                     domain="[('x_app_source_category','=', x_app_specific_source_category)]"
-                                    attrs="{'invisible': ['|','|',('x_app_source_category', '=', 'rehire'), ('x_app_source_category', '=', 'employee referral'), ('x_app_source_category', '=', False)]}" />
+                                    attrs="{'invisible': ['|','|','|',('x_app_source_category', '=', 'rehire'), ('x_app_source_category', '=', 'employee referral'), ('x_app_source_category', '=', 'external_referral'), ('x_app_source_category', '=', False)]}" />
                                 <field name="x_app_specific_source_last_str" invisible="1" />
                                 <field name="x_proactive_search_checker" invisible="1" />
                                 <field name="x_app_specific_source_category" invisible="1" />

@@ -729,7 +729,7 @@ class Applicant(models.Model):
             rec.initial_touch_date = False
             rec.x_application_category = False
             rec.x_application_stage_ownership = False
-            rec.stage_id = False
+            rec.stage_id = 1
             if not self._origin.x_reprofile_logs == False:
                 rec.reprofiled_identifier = True
 
